@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galeria S3 · Fabroku</title>
+  <style>
+    :root { --azul: #4357e0; --fundo: #f5f6fb; --texto: #1d2033; --cinza: #6b7083; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--fundo); color: var(--texto); }
+    header { background: var(--azul); color: #fff; padding: 28px 16px; }
+    header .caixa, main { max-width: 1040px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 1.6rem; }
+    header p { margin: 0; opacity: .85; }
+    main { padding: 24px 16px 48px; }
+    .status { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+              display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .status div span { display: block; font-size: .75rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; }
+    .status code { font-size: .9rem; word-break: break-all; }
+    .ok { color: #1a7f37; font-weight: 600; }
+    .aviso { color: #b35900; font-weight: 600; }
+    .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    figure { margin: 0; background: #fff; border-radius: 12px; overflow: hidden; }
+    figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: #e4e6f0; }
+    figcaption { padding: 10px 12px; }
+    figcaption strong { display: block; }
+    figcaption small { color: var(--cinza); }
+    .vazio { background: #fff; border-radius: 12px; padding: 40px; text-align: center; color: var(--cinza); }
+    a.botao { display: inline-block; margin-top: 12px; background: var(--azul); color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="caixa">
+      <h1>Galeria S3</h1>
+      <p>Fotos enviadas pelo admin e guardadas no Armazenamento S3 do Fabroku.</p>
+    </div>
+  </header>
+  <main>
+    <section class="status">
+      <div><span>Armazenamento</span>
+        {% if usa_s3 %}<span class="ok">S3 conectado</span>{% else %}<span class="aviso">Disco local (sem S3)</span>{% endif %}
+      </div>
+      <div><span>Bucket</span><code>{{ bucket|default:"-" }}</code></div>
+      <div><span>Endpoint</span><code>{{ endpoint|default:"-" }}</code></div>
+      <div><span>Fotos</span><code>{{ fotos|length }}</code></div>
+    </section>
+
+    {% if fotos %}
+      <section class="grade">
+        {% for foto in fotos %}
+          <figure>
+            <img src="{{ foto.imagem.url }}" alt="{{ foto.titulo }}" loading="lazy">
+            <figcaption>
+              <strong>{{ foto.titulo }}</strong>
+              <small>{{ foto.enviada_em|date:"d/m/Y H:i" }} · {{ foto.imagem.name }}</small>
+            </figcaption>
+          </figure>
+        {% endfor %}
+      </section>
+    {% else %}
+      <div class="vazio">
+        Nenhuma foto ainda.<br>
+        <a class="botao" href="{% url 'admin:galeria_foto_add' %}">Enviar a primeira pelo admin</a>
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>
