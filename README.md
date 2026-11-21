@@ -9,16 +9,24 @@ Django mínimo para mostrar o **Armazenamento S3** do [Fabroku](https://docs.fab
 3. Variáveis do app: `SECRET_KEY`, `DJANGO_SUPERUSER_USERNAME` e `DJANGO_SUPERUSER_PASSWORD`.
 4. Faça o deploy, entre em `/admin` e envie uma foto.
 
-O que faz o S3 funcionar é só isto no `settings.py`:
+O que faz o S3 funcionar é isto no `settings.py`:
 
 ```python
 STORAGES = {
-    'default': {'BACKEND': 'storages.backends.s3.S3Storage'},
+    'default': {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
+            'endpoint_url': os.environ['AWS_S3_ENDPOINT_URL'],
+            'region_name': os.environ['AWS_S3_REGION_NAME'],
+            'addressing_style': 'path',
+        },
+    },
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
 }
 ```
 
-O `django-storages` lê sozinho as variáveis `AWS_*` que o Fabroku configura.
+A chave e o segredo (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) o boto3 lê do ambiente; o resto vem das variáveis que o Fabroku grava no app.
 
 ## Local
 

@@ -70,14 +70,27 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Uploads: com o Armazenamento S3 vinculado, o Fabroku grava as variáveis AWS_*
 # e os arquivos vão para o bucket. Sem elas (rodando local), ficam em media/.
 USA_S3 = bool(os.environ.get('AWS_STORAGE_BUCKET_NAME'))
+if USA_S3:
+    # A chave e o segredo (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY) o boto3 lê sozinho do ambiente;
+    # bucket, endpoint e região o django-storages precisa receber aqui.
+    ARMAZENAMENTO = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'bucket_name': os.environ['AWS_STORAGE_BUCKET_NAME'],
+            'endpoint_url': os.environ['AWS_S3_ENDPOINT_URL'],
+            'region_name': os.environ.get('AWS_S3_REGION_NAME', 'garage'),
+            'addressing_style': 'path',
+            'querystring_auth': True,  # bucket privado: as imagens saem com link assinado
+            'querystring_expire': 3600,
+            'file_overwrite': False,
+        },
+    }
+else:
+    ARMAZENAMENTO = {'BACKEND': 'django.core.files.storage.FileSystemStorage'}
+
 STORAGES = {
-    'default': {
-        'BACKEND': 'storages.backends.s3.S3Storage' if USA_S3 else 'django.core.files.storage.FileSystemStorage',
-    },
+    'default': ARMAZENAMENTO,
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
 }
-AWS_QUERYSTRING_AUTH = True  # o bucket é privado: as imagens saem com link assinado
-AWS_QUERYSTRING_EXPIRE = 3600
-AWS_S3_FILE_OVERWRITE = False
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
